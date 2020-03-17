@@ -3,6 +3,7 @@ package commands
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/colinc86/covid-19/internal/models"
@@ -103,6 +104,14 @@ func (h *ListCommandHandler) Command() *cli.Command {
 
 // ListDataSetAction lists the full dataset.
 func (h *ListCommandHandler) ListDataSetAction(c *cli.Context) error {
+	if os.Getenv("UPDATE_DATA") == "true" {
+		// Update our data set
+		err := updateDataset(localPath, dataSetURL)
+		if err != nil {
+			return err
+		}
+	}
+
 	// Get the world locations
 	world, err := models.NewWorldFromPath(localPath)
 	if err != nil {

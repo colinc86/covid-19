@@ -4,6 +4,7 @@ package commands
 import (
 	"fmt"
 	"math"
+	"os"
 	"strings"
 
 	"github.com/colinc86/covid-19/internal/models"
@@ -79,6 +80,14 @@ func (h *GraphCommandHandler) Command() *cli.Command {
 
 // GraphDataSetAction graphs the full dataset.
 func (h *GraphCommandHandler) GraphDataSetAction(c *cli.Context) error {
+	if os.Getenv("UPDATE_DATA") == "true" {
+		// Update our data set
+		err := updateDataset(localPath, dataSetURL)
+		if err != nil {
+			return err
+		}
+	}
+
 	// Get the world locations
 	world, err := models.NewWorldFromPath(localPath)
 	if err != nil {

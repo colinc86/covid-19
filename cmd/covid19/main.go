@@ -35,8 +35,9 @@ func main() {
 		Usage:    usage,
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
-				Name:     "verbose",
-				Usage:    "Verbose output.",
+				Name:     "update",
+				Usage:    "Updates the dataset before executing the given command.",
+				Aliases:  []string{"u"},
 				Value:    false,
 				Required: false,
 			},
@@ -46,6 +47,7 @@ func main() {
 			listHandler.Command(),
 			updateHandler.Command(),
 		},
+		Before:                 before,
 		UseShortOptionHandling: true,
 	}
 
@@ -54,4 +56,16 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+// MARK: Application callbacks
+
+func before(c *cli.Context) error {
+	if c.Bool("update") {
+		os.Setenv("UPDATE_DATA", "true")
+	} else {
+		os.Setenv("UPDATE_DATA", "false")
+	}
+
+	return nil
 }

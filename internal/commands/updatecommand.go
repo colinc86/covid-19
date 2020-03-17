@@ -58,12 +58,8 @@ func (h *UpdateCommandHandler) Command() *cli.Command {
 
 // UpdateDataSetAction updates the full dataset.
 func (h *UpdateCommandHandler) UpdateDataSetAction(c *cli.Context) error {
-	s := NewSpinnerWithTitle("Updating dataset...")
-	s.Start()
-	defer s.Stop()
-
 	// Update our data set
-	err := downloadFile(localPath, dataSetURL)
+	err := updateDataset(localPath, dataSetURL)
 	if err != nil {
 		return err
 	}
@@ -73,9 +69,12 @@ func (h *UpdateCommandHandler) UpdateDataSetAction(c *cli.Context) error {
 
 // MARK: Unexported methods
 
-// DownloadFile will download a url to a local file. It's efficient because it will
-// write as it downloads and not load the whole file into memory.
-func downloadFile(filepath string, url string) error {
+// updateDataset updates the dataset at the given url and saves it to filepath.
+func updateDataset(filepath string, url string) error {
+	s := NewSpinnerWithTitle("Updating dataset...")
+	s.Start()
+	defer s.Stop()
+
 	// Get the data
 	resp, err := http.Get(url)
 	if err != nil {

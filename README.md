@@ -26,6 +26,12 @@ Run the command
 covid19 update data
 ```
 
+or add the `-u` flag to commands:
+
+```bash
+covid19 -u list data
+```
+
 Data is saved to `/usr/local/var/covid_full_data.csv`.
 
 ## Listing data
@@ -33,25 +39,25 @@ Data is saved to `/usr/local/var/covid_full_data.csv`.
 List data by location
 
 ```bash
-covid19 data list
+covid19 list data
 ```
 
 List world data
 
 ```bash
-covid19 data list -w
+covid19 list data -w
 ```
 
 List data by location and sort by total cases (or new cases/deaths and total deaths)
 
 ```bash
-covid19 data list --sortBy totalCases
+covid19 list data --sortBy totalCases
 ```
 
 List data from a location
 
 ```bash
-covid19 data list -l [location]
+covid19 list data -l [location]
 ```
 
 ## Graphs
