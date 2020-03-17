@@ -85,6 +85,10 @@ func (h *GraphCommandHandler) GraphDataSetAction(c *cli.Context) error {
 		return err
 	}
 
+	if len(h.graph) == 0 {
+		h.graph = "totalCases"
+	}
+
 	// Get the total value for the location in question
 	total := 0
 	if len(h.location) == 0 || strings.ToLower(h.location) == "world" {
