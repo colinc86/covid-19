@@ -121,6 +121,21 @@ func (h *GraphCommandHandler) GraphDataSetAction(c *cli.Context) error {
 		}
 	}
 
+	// Get the header value name
+	name := ""
+	switch strings.ToLower(h.graph) {
+	case "newcases":
+		name = "New Cases"
+	case "newdeaths":
+		name = "New Deaths"
+	case "totalcases":
+		name = "Total Cases"
+	case "totaldeaths":
+		name = "Total Deaths"
+	}
+
+	fmt.Printf("%-32s %-12s\n", "Date", name)
+
 	// Draw the graphs
 	if len(h.location) == 0 || strings.ToLower(h.location) == "world" {
 		for _, r := range world.Records {
