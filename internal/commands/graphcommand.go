@@ -2,11 +2,8 @@
 package commands
 
 import (
-	"bufio"
-	"encoding/csv"
 	"fmt"
-	"io"
-	"os"
+	"math"
 	"strings"
 
 	"github.com/colinc86/covid-19/internal/models"
@@ -22,6 +19,7 @@ type GraphCommandHandler struct {
 
 	// MARK: Private properties
 	location string
+	graph    string
 }
 
 // MARK: Initializers
@@ -66,6 +64,13 @@ func (h *GraphCommandHandler) Command() *cli.Command {
 						Required:    false,
 						Destination: &h.location,
 					},
+					&cli.StringFlag{
+						Name:        "value",
+						Aliases:     []string{"v"},
+						Usage:       "Value by newCases, newDeaths, totalCases or totalDeaths.",
+						Required:    false,
+						Destination: &h.graph,
+					},
 				},
 			},
 		},
@@ -74,74 +79,98 @@ func (h *GraphCommandHandler) Command() *cli.Command {
 
 // GraphDataSetAction graphs the full dataset.
 func (h *GraphCommandHandler) GraphDataSetAction(c *cli.Context) error {
-	// Read records from the csv
-	file, err := os.Open(localPath)
+	// Get the world locations
+	world, err := models.NewWorldFromPath(localPath)
 	if err != nil {
 		return err
 	}
 
-	defer file.Close()
-
-	csvReader := csv.NewReader(bufio.NewReader(file))
-	csvReader.FieldsPerRecord = 6
-
-	// Get the max value in the list
-	for {
-		record, readError := csvReader.Read()
-		if readError != nil {
-			if readError == io.EOF {
-				break
-			}
-
-			return err
+	// Get the total value for the location in question
+	total := 0
+	if len(h.location) == 0 || strings.ToLower(h.location) == "world" {
+		switch strings.ToLower(h.graph) {
+		case "newcases", "newdeaths":
+			total = 0
+		case "totalcases":
+			total = world.TotalCases()
+		case "totaldeaths":
+			total = world.TotalDeaths()
 		}
-
-		covRecord, err := models.NewCOVRecord(record)
-		if err != nil {
-			if err.Error() == "header" {
+	} else if len(h.location) > 0 {
+		for _, l := range world.Locations {
+			if strings.ToLower(l.Name) != strings.ToLower(h.location) {
 				continue
 			}
 
-			return err
-		}
+			switch strings.ToLower(h.graph) {
+			case "newcases":
+				total = l.NewCases()
+			case "newdeaths":
+				total = l.NewDeaths()
+			case "totalcases":
+				total = l.TotalCases()
+			case "totaldeaths":
+				total = l.TotalDeaths()
+			}
 
-		if len(h.location) > 0 && strings.ToLower(covRecord.Location) == strings.ToLower(h.location) {
-			fmt.Printf(covRecord.String() + "\n")
-		} else if len(h.location) == 0 {
-			fmt.Printf(covRecord.String() + "\n")
+			break
 		}
 	}
 
-	file.Seek(0, 0)
-
-	fmt.Printf("%-32s %-32s %-12s %-12s %-12s %-12s", "Date", "Location", "New Cases", "New Deaths", "Total Cases", "Total Deaths")
-
-	for {
-		record, readError := csvReader.Read()
-		if readError != nil {
-			if readError == io.EOF {
-				break
+	// Draw the graphs
+	if len(h.location) == 0 || strings.ToLower(h.location) == "world" {
+		for _, r := range world.Records {
+			value := 0
+			switch strings.ToLower(h.graph) {
+			case "newcases":
+				value = r.NewCases
+			case "newdeaths":
+				value = r.NewDeaths
+			case "totalcases":
+				value = r.TotalCases
+			case "totaldeaths":
+				value = r.TotalDeaths
 			}
 
-			return err
-		}
+			bar := ""
+			ticks := int(math.Ceil(float64(value) / (float64(total) / 40.0)))
+			for i := 0; i < ticks; i++ {
+				bar += "#"
+			}
 
-		covRecord, err := models.NewCOVRecord(record)
-		if err != nil {
-			if err.Error() == "header" {
+			fmt.Printf("%-32v %-12d %s\n", r.Date, value, bar)
+		}
+	} else if len(h.location) > 0 {
+		for _, l := range world.Locations {
+			if strings.ToLower(l.Name) != strings.ToLower(h.location) {
 				continue
 			}
 
-			return err
-		}
+			for _, r := range l.Records {
+				value := 0
+				switch strings.ToLower(h.graph) {
+				case "newcases":
+					value = r.NewCases
+				case "newdeaths":
+					value = r.NewDeaths
+				case "totalcases":
+					value = r.TotalCases
+				case "totaldeaths":
+					value = r.TotalDeaths
+				}
 
-		if len(h.location) > 0 && strings.ToLower(covRecord.Location) == strings.ToLower(h.location) {
-			fmt.Printf(covRecord.String() + "\n")
-		} else if len(h.location) == 0 {
-			fmt.Printf(covRecord.String() + "\n")
+				bar := ""
+				ticks := int(math.Ceil(float64(value) / (float64(total) / 40.0)))
+				for i := 0; i < ticks; i++ {
+					bar += "#"
+				}
+
+				fmt.Printf("%-32v %-12d %s\n", r.Date, value, bar)
+			}
+
+			break
 		}
 	}
 
-	file.Seek(0, 0)
 	return nil
 }

@@ -17,8 +17,10 @@ type ListCommandHandler struct {
 	Description string
 
 	// MARK: Private properties
-	location string
-	world    bool
+	location  string
+	world     bool
+	sortBy    string
+	sortOrder string
 }
 
 // MARK: Initializers
@@ -39,7 +41,13 @@ func NewListCommandHandler() *ListCommandHandler {
 			covid19 list data -l [location]
 			
 			# List the world data
-			covid19 list data -w`,
+			covid19 list data -w
+			
+			# Sort by total cases
+			covid19 list data --sortBy totalCases
+			
+			# Sort by name ascending
+			covid19 list data --sortOrder asc`,
 	}
 }
 
@@ -73,6 +81,20 @@ func (h *ListCommandHandler) Command() *cli.Command {
 						Required:    false,
 						Destination: &h.world,
 					},
+					&cli.StringFlag{
+						Name:        "sortBy",
+						Aliases:     []string{"sb"},
+						Usage:       "Sort by name, newCases, newDeaths, totalCases or totalDeaths.",
+						Required:    false,
+						Destination: &h.sortBy,
+					},
+					&cli.StringFlag{
+						Name:        "sortOrder",
+						Aliases:     []string{"so"},
+						Usage:       "asc or desc",
+						Required:    false,
+						Destination: &h.sortOrder,
+					},
 				},
 			},
 		},
@@ -87,16 +109,43 @@ func (h *ListCommandHandler) ListDataSetAction(c *cli.Context) error {
 		return err
 	}
 
-	fmt.Printf("%-32s %-32s %-12s %-12s %-12s %-12s", "Date", "Location", "New Cases", "New Deaths", "Total Cases", "Total Deaths")
+	if len(h.sortBy) == 0 {
+		h.sortBy = "name"
+	}
 
-	for _, l := range world.Locations {
-		if len(h.location) > 0 && strings.ToLower(l.Name) != strings.ToLower(h.location) {
-			continue
-		}
+	if len(h.sortOrder) == 0 {
+		h.sortOrder = "desc"
+	}
 
-		for _, r := range l.Records {
+	world.Sort(h.sortBy, h.sortOrder)
+
+	if h.world {
+		fmt.Printf("%-32s %-32s %-12s %-12s %-12s %-12s", "Date", "Location", "New Cases", "New Deaths", "Total Cases", "Total Deaths\n")
+
+		for _, r := range world.Records {
 			fmt.Printf(r.String() + "\n")
 		}
+	} else {
+		if len(h.location) > 0 {
+			fmt.Printf("%-32s %-32s %-12s %-12s %-12s %-12s", "Date", "Location", "New Cases", "New Deaths", "Total Cases", "Total Deaths\n")
+
+			for _, l := range world.Locations {
+				if len(h.location) > 0 && strings.ToLower(l.Name) != strings.ToLower(h.location) {
+					continue
+				}
+
+				for _, r := range l.Records {
+					fmt.Printf(r.String() + "\n")
+				}
+			}
+		} else {
+			fmt.Printf("%-32s %-12s %-12s %-12s %-12s", "Location", "New Cases", "New Deaths", "Total Cases", "Total Deaths\n")
+
+			for _, l := range world.Locations {
+				fmt.Printf(l.String() + "\n")
+			}
+		}
 	}
+
 	return nil
 }

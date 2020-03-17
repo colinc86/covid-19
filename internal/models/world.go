@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"sort"
 	"strings"
 )
 
@@ -67,7 +68,7 @@ func NewWorldFromPath(path string) (*World, error) {
 			return nil, err
 		}
 
-		if covRecord.Location != location && len(records) > 0 {
+		if covRecord.Location != location && len(records) > 0 && len(location) > 0 {
 			if strings.ToLower(location) == "world" {
 				world = NewLocation(location, records)
 			} else {
@@ -76,6 +77,8 @@ func NewWorldFromPath(path string) (*World, error) {
 
 			location = covRecord.Location
 			records = nil
+		} else if covRecord.Location != location {
+			location = covRecord.Location
 		}
 
 		records = append(records, covRecord)
@@ -129,4 +132,45 @@ func (w World) ListLocationData() {
 	for _, l := range w.Locations {
 		fmt.Printf(l.String() + "\n")
 	}
+}
+
+// Sort sorts the world data by the given descriptor and order.
+func (w *World) Sort(descriptor string, order string) {
+	sort.Slice(w.Locations, func(i, j int) bool {
+		iLocation := w.Locations[i]
+		jLocation := w.Locations[j]
+
+		switch strings.ToLower(descriptor) {
+		case "name":
+			if order == "desc" {
+				return strings.Compare(iLocation.Name, jLocation.Name) < 0
+			}
+			return strings.Compare(iLocation.Name, jLocation.Name) > 0
+		case "newcases":
+			if order == "desc" {
+				return iLocation.NewCases() < jLocation.NewCases()
+			}
+			return iLocation.NewCases() > jLocation.NewCases()
+		case "newdeaths":
+			if order == "desc" {
+				return iLocation.NewDeaths() < jLocation.NewDeaths()
+			}
+			return iLocation.NewDeaths() > jLocation.NewDeaths()
+		case "totalcases":
+			if order == "desc" {
+				return iLocation.TotalCases() < jLocation.TotalCases()
+			}
+			return iLocation.TotalCases() > jLocation.TotalCases()
+		case "totaldeaths":
+			if order == "desc" {
+				return iLocation.TotalDeaths() < jLocation.TotalDeaths()
+			}
+			return iLocation.TotalDeaths() > jLocation.TotalDeaths()
+		default:
+			if order == "desc" {
+				return strings.Compare(iLocation.Name, jLocation.Name) < 0
+			}
+			return strings.Compare(iLocation.Name, jLocation.Name) > 0
+		}
+	})
 }

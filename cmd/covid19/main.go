@@ -22,6 +22,7 @@ func main() {
 	rand.Seed(time.Now().Unix())
 
 	// Setup the commands
+	graphHandler := commands.NewGraphCommandHandler()
 	listHandler := commands.NewListCommandHandler()
 	updateHandler := commands.NewUpdateCommandHandler()
 
@@ -41,6 +42,7 @@ func main() {
 			},
 		},
 		Commands: []*cli.Command{
+			graphHandler.Command(),
 			listHandler.Command(),
 			updateHandler.Command(),
 		},

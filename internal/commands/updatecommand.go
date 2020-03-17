@@ -10,7 +10,7 @@ import (
 )
 
 const dataSetURL = "https://covid.ourworldindata.org/data/full_data.csv"
-const localPath = "./full_data.csv"
+const localPath = "/usr/local/var/covid_full_data.csv"
 
 // UpdateCommandHandler handles update commands.
 type UpdateCommandHandler struct {
