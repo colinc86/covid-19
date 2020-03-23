@@ -56,6 +56,26 @@ func (l Location) TotalDeaths() int {
 	return 0
 }
 
+// TotalCasesSignal returns the location's records' total cases
+// as a float slice.
+func (l Location) TotalCasesSignal() []float64 {
+	var signal []float64
+	for _, r := range l.Records {
+		signal = append(signal, float64(r.TotalCases))
+	}
+	return signal
+}
+
+// TotalDeathsSignal returns the location's records' total deaths
+// as a float slice.
+func (l Location) TotalDeathsSignal() []float64 {
+	var signal []float64
+	for _, r := range l.Records {
+		signal = append(signal, float64(r.TotalDeaths))
+	}
+	return signal
+}
+
 // MARK: String interface methods
 
 func (l Location) String() string {

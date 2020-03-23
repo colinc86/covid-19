@@ -24,6 +24,7 @@ func main() {
 	// Setup the commands
 	graphHandler := commands.NewGraphCommandHandler()
 	listHandler := commands.NewListCommandHandler()
+	predictHandler := commands.NewPredictCommandHandler()
 	updateHandler := commands.NewUpdateCommandHandler()
 
 	// Setup the application
@@ -45,6 +46,7 @@ func main() {
 		Commands: []*cli.Command{
 			graphHandler.Command(),
 			listHandler.Command(),
+			predictHandler.Command(),
 			updateHandler.Command(),
 		},
 		Before:                 before,

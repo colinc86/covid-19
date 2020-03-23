@@ -174,3 +174,45 @@ func (w *World) Sort(descriptor string, order string) {
 		}
 	})
 }
+
+// TotalCasesSignal returns the world's records' total cases
+// as a float slice.
+func (w World) TotalCasesSignal() []float64 {
+	var signal []float64
+	for _, r := range w.Records {
+		signal = append(signal, float64(r.TotalCases))
+	}
+	return signal
+}
+
+// TotalDeathsSignal returns the world's records' total deaths
+// as a float slice.
+func (w World) TotalDeathsSignal() []float64 {
+	var signal []float64
+	for _, r := range w.Records {
+		signal = append(signal, float64(r.TotalDeaths))
+	}
+	return signal
+}
+
+// TotalCasesSignalForLocation returns the location's records' total
+// cases as a float slice.
+func (w World) TotalCasesSignalForLocation(location string) []float64 {
+	for _, l := range w.Locations {
+		if strings.ToLower(location) == strings.ToLower(l.Name) {
+			return l.TotalCasesSignal()
+		}
+	}
+	return nil
+}
+
+// TotalDeathsSignalForLocation returns the location's records' total
+// deaths as a float slice.
+func (w World) TotalDeathsSignalForLocation(location string) []float64 {
+	for _, l := range w.Locations {
+		if strings.ToLower(location) == strings.ToLower(l.Name) {
+			return l.TotalDeathsSignal()
+		}
+	}
+	return nil
+}
